@@ -6,3 +6,6 @@ django-filter
 drf-spectacular
 
 djangorestframework-simplejwt
+
+# XML support
+ djangorestframework-xml
