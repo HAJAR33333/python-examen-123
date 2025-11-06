@@ -52,6 +52,13 @@ from .permissions import IsOwnerOrReadOnly
                 type=str,
                 location=OpenApiParameter.QUERY,
             ),
+            OpenApiParameter(
+            name="min_rating",
+            description="Filtrer par note moyenne minimale",
+            required=False,
+            type=float,
+            location=OpenApiParameter.QUERY,
+        ),
         ],
     ),
     retrieve=extend_schema(
