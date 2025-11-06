@@ -1,26 +1,25 @@
-.RECIPEPREFIX := >
 PY ?= python
 MANAGE := $(PY) manage.py
 
-.PHONY: run migrate makemigrations superuser schema-json schema-yaml
+.PHONY: run migrate makemigrations superuser schema-json schema-yaml test
 
 run:
-> $(MANAGE) runserver
+	$(MANAGE) runserver
 
 migrate:
-> $(MANAGE) migrate
+	$(MANAGE) migrate
 
 makemigrations:
-> $(MANAGE) makemigrations
+	$(MANAGE) makemigrations
 
 superuser:
-> $(MANAGE) createsuperuser
+	$(MANAGE) createsuperuser
 
 schema-json:
-> $(MANAGE) spectacular --file schema.json --format openapi-json
+	$(MANAGE) spectacular --file schema.json --format openapi-json
 
 schema-yaml:
-> $(MANAGE) spectacular --file schema.yaml --format openapi
+	$(MANAGE) spectacular --file schema.yaml --format openapi
 
 test:
-> $(MANAGE) test -v 2
+	$(MANAGE) test -v 2
