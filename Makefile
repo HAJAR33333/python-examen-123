@@ -1,4 +1,4 @@
-PY ?= python
+gitPY ?= python
 MANAGE := $(PY) manage.py
 
 .PHONY: run migrate makemigrations superuser schema-json schema-yaml test
