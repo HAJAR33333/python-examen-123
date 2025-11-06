@@ -67,16 +67,20 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "API Cours Django",
     "DESCRIPTION": "Demo API Products avec Django REST Framework",
     "VERSION": "1.0.0",
+
     "SERVE_INCLUDE_SCHEMA": False,
-     "SECURITY_SCHEMES": {
-        "BearerAuth": {
+
+    "ENABLE_FORMAT_SUFFIXES": False,
+
+    "SECURITY_SCHEMES": {
+        "jwtAuth": {
             "type": "http",
             "scheme": "bearer",
             "bearerFormat": "JWT",
         }
     },
-    # Exiger le Bearer par défaut dans toute la doc (les endpoints publics continuent de marcher sans token)
-    "SECURITY_REQUIREMENTS": [{"BearerAuth": []}],
+
+    "SECURITY_REQUIREMENTS": [{"jwtAuth": []}],
 }
 
 

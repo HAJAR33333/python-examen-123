@@ -1,4 +1,4 @@
-# Django Cours — Module 1
+# Django Cours
 
 Objectifs : écosystème Python & Django, environnement isolé, projet pro, ORM, migrations, Admin, DBeaver.
 

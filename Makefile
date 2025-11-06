@@ -21,3 +21,6 @@ schema-json:
 
 schema-yaml:
 > $(MANAGE) spectacular --file schema.yaml --format openapi
+
+test:
+> $(MANAGE) test -v 2
