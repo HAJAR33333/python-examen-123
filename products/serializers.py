@@ -19,23 +19,23 @@ class ProductSerializer(serializers.ModelSerializer):
         return value
     
 
-    class ReviewSerializer(serializers.ModelSerializer):
-        user = serializers.StringRelatedField(read_only=True)
-        class Meta:
-            model = Review
-            fields = "__all__"
-            read_only_fields = ("user", "created_at")
+class ReviewSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
+    class Meta:
+        model = Review
+        fields = "__all__"
+        read_only_fields = ("user", "created_at")
 
-        def validate_rating(self, value):
-            if value < 1 or value > 5 : 
-                raise serializers.ValidationError("La note doit être entre 1 et 5.")
-            return value
-        
-        def validate(self, attrs):
+    def validate_rating(self, value):
+        if value < 1 or value > 5 : 
+            raise serializers.ValidationError("La note doit être entre 1 et 5.")
+        return value
+    
+    def validate(self, attrs):
 
-            request = self.context.get("request")
-            if request and request.method == "POST":
-                product = attrs.get("product")
-                if product and Review.objects.filter(product = product, user = request.user).exists():
-                    raise serializers.ValidationError("Vous avez déjà laissé un avis pour ce produit.")
-            return attrs    
+        request = self.context.get("request")
+        if request and request.method == "POST":
+            product = attrs.get("product")
+            if product and Review.objects.filter(product = product, user = request.user).exists():
+                raise serializers.ValidationError("Vous avez déjà laissé un avis pour ce produit.")
+        return attrs    

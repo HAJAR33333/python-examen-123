@@ -3,6 +3,9 @@ from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework_xml.parsers import XMLParser
 from rest_framework_xml.renderers import XMLRenderer
+from rest_framework import viewsets, permissions, filters, response, decorators, status
+from django.db.models import Avg, Count, FloatField
+from django.db.models.functions import Coalesce
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -14,8 +17,9 @@ from drf_spectacular.utils import (
     OpenApiResponse,
 )
 
-from .models import Product
-from .serializers import ProductSerializer
+from .models import Product, Review
+from .serializers import ProductSerializer, ReviewSerializer
+from .permissions import IsOwnerOrReadOnly
 
 
 @extend_schema_view(
@@ -102,6 +106,7 @@ from .serializers import ProductSerializer
         responses={204: OpenApiResponse(description="No Content")},
     ),
 )
+
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all().order_by("-created_at")
     serializer_class = ProductSerializer
@@ -116,3 +121,44 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering_fields = ["created_at", "price", "name"]
     ordering = ["-created_at"]
     filterset_fields = ["name", "price"]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        qs = qs.annotate(
+            avg_rating=Coalesce(Avg("reviews__rating"), 0.0,
+            output_field=FloatField()),
+            reviews_count=Count("reviews")
+        )
+        # Filtre ?min_rating=
+        min_rating = self.request.query_params.get("min_rating")
+        if min_rating:
+            try:
+                qs = qs.filter(avg_rating__gte=float(min_rating))
+            except ValueError:
+              pass
+        return qs
+    
+    @decorators.action(detail=True, methods=["get"], url_path="rating")
+    def rating(self, request, pk=None):
+        product = self.get_object()
+        data = {
+            "product_id": product.id,
+            "avg_rating": getattr(product, "avg_rating", None) or product.reviews.aggregate(avg=Avg("rating"))["avg"] or 0.0,
+            "count": product.reviews.count(),
+        }
+        return response.Response(data)
+    
+    @decorators.action(detail=True, methods=["get"], url_path="reviews")
+    def product_reviews(self, request, pk=None):
+        product = self.get_object()
+        qs = product.reviews.all().order_by("-created_at")
+        from .serializers import ReviewSerializer
+        ser = ReviewSerializer(qs, many=True)
+        return response.Response(ser.data)
+    
+class ReviewViewSet(viewsets.ModelViewSet):
+     queryset = Review.objects.select_related("product", "user").all()
+     serializer_class = ReviewSerializer
+     permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+     def perform_create(self, serializer):
+       serializer.save(user=self.request.user)
